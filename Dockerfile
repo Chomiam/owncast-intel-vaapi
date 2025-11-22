@@ -1,10 +1,15 @@
 FROM owncast/owncast:latest
 
 # Activer le repository community pour accéder aux pilotes VAAPI
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/$(cat /etc/alpine-release | cut -d'.' -f1,2)/community" >> /etc/apk/repositories
+# Décommenter ou ajouter la ligne community
+RUN if grep -q "^#.*\/community$" /etc/apk/repositories; then \
+        sed -i 's/^#\(.*\/community\)$/\1/' /etc/apk/repositories; \
+    elif ! grep -q "\/community$" /etc/apk/repositories; then \
+        echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories; \
+    fi
 
 # Installer les pilotes VAAPI/QSV pour Intel Arc
-# Note: Alpine Linux 3.21+ est requis pour un support complet d'Intel Arc
+# Note: Alpine Linux 3.22+ est requis pour un support complet d'Intel Arc
 RUN apk update && apk add --no-cache \
     libva \
     libva-utils \
