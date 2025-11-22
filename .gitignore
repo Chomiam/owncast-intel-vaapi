@@ -1,0 +1,25 @@
+# Données Owncast
+data/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment files (si vous en ajoutez)
+.env
+.env.local

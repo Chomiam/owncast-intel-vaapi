@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  owncast:
+    # Option 1: Utiliser l'image pré-buildée depuis GitHub Container Registry
+    # image: ghcr.io/chomiam/owncast-intel-vaapi:latest
+
+    # Option 2: Builder l'image localement
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: owncast-intel-vaapi
+
+    # Redémarrage automatique
+    restart: unless-stopped
+
+    # Ports exposés
+    ports:
+      - "8080:8080"   # Interface web
+      - "1935:1935"   # RTMP
+
+    # Volumes pour persistance des données
+    volumes:
+      - ./data:/app/data
+      - /dev/dri:/dev/dri  # Accès au GPU Intel
+
+    # Accès aux groupes video et render pour utiliser le GPU
+    # IMPORTANT: Vérifiez les GIDs sur votre système avec: getent group video render
+    group_add:
+      - "44"   # video (GID par défaut sur la plupart des systèmes)
+      - "109"  # render (GID par défaut sur la plupart des systèmes)
+
+    # Variables d'environnement
+    environment:
+      # Forcer l'utilisation du pilote iHD (Intel Arc et récent)
+      - LIBVA_DRIVER_NAME=iHD
+
+      # Options optionnelles pour debug VAAPI
+      # - LIBVA_TRACE=/tmp/libva_trace.log
+      # - LIBVA_MESSAGING_LEVEL=1
+
+    # Devices (alternative à group_add pour certains systèmes)
+    devices:
+      - /dev/dri:/dev/dri
+
+    # Limites de ressources (optionnel)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 4G
+    #     reservations:
+    #       devices:
+    #         - driver: gpu
+    #           capabilities: [gpu]
+
+# Volumes nommés (optionnel, alternatif au bind mount)
+# volumes:
+#   owncast_data:
