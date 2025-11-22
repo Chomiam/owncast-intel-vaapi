@@ -23,13 +23,16 @@ services:
     # Volumes pour persistance des données
     volumes:
       - ./data:/app/data
-      - /dev/dri:/dev/dri  # Accès au GPU Intel
+      # Pour un chemin personnalisé, utilisez par exemple :
+      # - /mnt/tank/configs/owncast:/app/data
 
     # Accès aux groupes video et render pour utiliser le GPU
-    # IMPORTANT: Vérifiez les GIDs sur votre système avec: getent group video render
+    # IMPORTANT: Obtenez les GIDs corrects de votre système avec cette commande :
+    #   getent group video render
+    # Puis remplacez les valeurs ci-dessous par les GIDs affichés
     group_add:
-      - "44"   # video (GID par défaut sur la plupart des systèmes)
-      - "109"  # render (GID par défaut sur la plupart des systèmes)
+      - "44"   # video (GID par défaut, souvent 44 ou 984)
+      - "109"  # render (GID par défaut, souvent 109 ou 988)
 
     # Variables d'environnement
     environment:
@@ -40,9 +43,12 @@ services:
       # - LIBVA_TRACE=/tmp/libva_trace.log
       # - LIBVA_MESSAGING_LEVEL=1
 
-    # Devices (alternative à group_add pour certains systèmes)
+    # Passthrough des devices GPU Intel
     devices:
       - /dev/dri:/dev/dri
+      # Pour un accès plus spécifique, vous pouvez aussi utiliser :
+      # - /dev/dri/card0:/dev/dri/card0
+      # - /dev/dri/renderD128:/dev/dri/renderD128
 
     # Limites de ressources (optionnel)
     # deploy:

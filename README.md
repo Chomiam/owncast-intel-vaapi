@@ -34,12 +34,33 @@ L'image officielle `owncast/owncast:latest` ne contient pas les pilotes VAAPI n�
   ```
 
 ### Permissions
-Vérifier les GIDs des groupes `video` et `render` sur votre système :
+
+**IMPORTANT :** Vous devez obtenir les GIDs (Group IDs) corrects des groupes `video` et `render` de votre système.
+
+Exécutez cette commande sur votre système hôte :
 ```bash
 getent group video render
 ```
 
-Si les GIDs sont différents de 44 (video) et 109 (render), modifiez le `docker-compose.yaml` en conséquence.
+Exemple de sortie :
+```
+video:x:44:user1,user2
+render:x:109:user1
+```
+
+Les GIDs sont les chiffres après le premier `:` (44 pour video, 109 pour render dans cet exemple).
+
+**Modifiez ensuite le `docker-compose.yaml`** pour utiliser VOS GIDs :
+```yaml
+group_add:
+  - "44"   # Remplacez par votre GID video
+  - "109"  # Remplacez par votre GID render
+```
+
+Les GIDs varient selon les distributions :
+- Ubuntu/Debian : souvent 44 (video) et 109 (render)
+- Arch/Fedora : peuvent être 984 (video) et 988 (render)
+- Autres : utilisez la commande `getent` pour vérifier
 
 ## Installation
 
@@ -67,6 +88,41 @@ cd owncast-intel-vaapi
 
 # Builder et lancer
 docker compose up -d --build
+```
+
+### Exemple de configuration complète
+
+Voici un exemple de `docker-compose.yaml` avec tous les paramètres personnalisés :
+
+```yaml
+version: "3.8"
+
+services:
+  owncast:
+    image: ghcr.io/chomiam/owncast-intel-vaapi:latest
+    container_name: owncast-intel-vaapi
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"   # Interface web
+      - "1935:1935"   # RTMP
+
+    volumes:
+      # Utilisez votre chemin personnalisé
+      - /mnt/tank/configs/owncast:/app/data
+
+    environment:
+      - LIBVA_DRIVER_NAME=iHD
+
+    # IMPORTANT: Obtenez vos GIDs avec: getent group video render
+    group_add:
+      - "984"   # Votre GID video
+      - "988"   # Votre GID render
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dri/card0:/dev/dri/card0
+      - /dev/dri/renderD128:/dev/dri/renderD128
 ```
 
 ## Utilisation
