@@ -1,13 +1,17 @@
 FROM owncast/owncast:latest
 
+# Activer le repository community pour accéder aux pilotes VAAPI
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/$(cat /etc/alpine-release | cut -d'.' -f1,2)/community" >> /etc/apk/repositories
+
 # Installer les pilotes VAAPI/QSV pour Intel Arc
 # Note: Alpine Linux 3.21+ est requis pour un support complet d'Intel Arc
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     libva \
+    libva-utils \
     libva-intel-driver \
     intel-media-driver \
-    mesa-va-gallium \
-    vainfo
+    mesa-dri-gallium \
+    mesa-va-gallium
 
 # Définir le pilote VAAPI par défaut (iHD pour Intel Arc)
 ENV LIBVA_DRIVER_NAME=iHD
